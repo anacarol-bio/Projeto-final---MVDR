@@ -1,0 +1,191 @@
+---
+title: "Análise *in silico* do repetoma de *Epidendrum* L. (Orchidaceae) a partir de dados de sequenciamento NGS"
+author: "Ana Carolina Humberto"
+date: "2023-12-11"
+output: html_document
+---
+
+```{r setup, include=FALSE, echo=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+options(tinytex.verbose = TRUE)
+```
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+
+library(tidyverse)
+library(ggplot2)
+library(devtools)
+(library(dplyr))
+library(readxl)
+library(readr)
+library(palmerpenguins)
+library(knitr)
+library(kableExtra)
+
+```
+
+# 1. Introdução
+
+*Epidendrum* L. é o gênero de orquídeas mais representativo da subfamília Epidendroideae (Orchidaceae Juss.). Com distribuição ao longo da região Neotropical, as espécies deste gênero podem ser encontradas desde a Flórida (EUA) até a Argentina (PINHEIRO; COZZOLINO, 2013). O número de espécies de *Epidendrum* formalmente descritas aumentou de 1.000 para 1.800 nas últimas duas décadas, com projeções sugerindo que o gênero possa ter até 2.400 espécies (KARREMANS, 2021). A diversificação do gênero nos mais diversos ambientes e nas mais diversas formas morfológicas deve-se a muitos fatores, dentre eles a variação de tamanho de genoma (PESSOA et al., 2021).
+
+O tamanho de genoma (TG), também conhecido como valor-C, representa a quantidade de DNA presente em um núcleo não replicado e pode variar a partir de dois mecanismos: a poliploidia, que duplica o genoma completo, ou expansões/retrações do conjunto de sequências repetitivas de DNA, representadas por elementos transponíveis (do inglês, *transposable elements* - TEs) e/ou sequências de DNA repetidas em tandem (ie., sequências repetidas uma seguida da outra). O conjunto de elementos repetitivos que compõe o núcleo celular é também chamado de repetoma, sendo de grande relevância para a compreensão da biologia e evolução das espécies (MEHROTRA; GOYAL, 2014).
+
+Quanto aos elementos que compõem o repetoma, os TEs podem ser classificados em duas classes principais com base em seu mecanismo de transposição e integração no genoma (WICKER et al., 2007). Os TEs de classe I, também conhecidos como retrotransposons, migram por meio de um processo de “cópia-e-cola” em que um intermediário de RNA é transcrito reversamente numa cópia de cDNA, a qual é integrada em outra região genômica. Por sua vez, TEs de classe II, também conhecidos como transposons de DNA, se movimentam via exsisão da molécula de DNA, por meio de um processo de “cortar-e-colar” (WICKER et al., 2007; BOURQUE et al., 2018). Já as sequências de DNA repetitivas organizadas em tandem podem variar quanto ao tamanho da unidade de repetição, assim como quanto a escala de repetição, sendo classificadas em três grupos: (i) microssatélites, com repetições de 2 a 5 pb e um arranjo de 10 a 100 unidades; (ii) minissatélites, com repetições de 6–100 pb e um arranjo de 0,5–30 kb; e (iii) DNA satélite (DNAsat), com uma unidade de repetição de até 1.000 pb (MEHROTRA; GOYAL, 2014). 
+
+Alterações na composição do repetoma são capazes de explicar a dinâmica das variações interespecíficas do TG em muitos grupos de organismos (FOURREAU et al., 2023), incluindo Orchidaceae, que  apresenta a segunda maior variação de TG (168 vezes), com valores que vão de 1C=0,33 pg em *Oncidium maduroi* Dressler a 1C=55,4 pg em *Pogonia ophioglossoides* (L.) Ker Gawl. (LEITCH et al., 2009). No entanto, em diversos grupos de orquídeas os padrões de mudanças intraespecíficas e interespecificas do conteúdo do repetoma são pouco explorados, como é o caso do gênero *Epidendrum*, sendo necessário realizar mais estudos para caracterizá-los.
+
+Atualmente, as tecnologias de sequenciamento de nova geração (do inglês, *Next Generation Sequencing* - NGS; YOUNG; GILLUNG, 2020) configuram como uma importante ferramenta no estudo genômico de plantas, possibilitando evidenciar grande parte do repetoma dos genomas vegetais mesmo com baixa cobertura (0,01 – 0,5x do TG) (GOODWIN et al., 2016; YOUNG; GILLUNG, 2020). O desenvolvimento das técnicas de NGS juntamente com ferramentas de bioinformática dedicadas à anotação de elementos repetitivos tem permitido descrever e identificar detalhadamente várias classes de TEs e DNA repetido em tandem em dados de sequenciamento, vários dos quais estão potencialmente envolvidos nas variações de TG (FOURREAU et al., 2023).
+
+Dentre os softwares de bioinformática disponíveis, o RepeatExplorer2 (RE2; NOVÁK et al., 2010, 2017, 2020) configura como um pipeline computacional composto por diferentes ferramentas acessíveis pelo servidor Galaxy via web, através do qual é possível caracterizar elementos repetitivos na fração não codificante de genomas vegetais, permitindo tanto descrever a composição do repetoma individual de cada taxa como realizar análises comparativas entre grupos (HSU et al., 2020; WANG et al., 2022). 
+
+Sabe-se que a caracterização do repetoma é fundamental para a compreensão da estrutura e evolução genômica vegetal. Ademais, mudanças na composição das famílias de elementos repetitivos de DNA podem fornecer evidências sobre a ocorrência de processos evolutivos como duplicações genômicas, rearranjos e eventos de expansão e contração do genoma. Assim, diante da ausência de dados de caracterização do repetoma de espécies do gênero *Epidendrum* na literatura e em bancos de dados online, visamos através deste trabalho realizar análises *in silico* para identificar sequências candidatas a TE e DNAsat nos genomas de espécies com dados de sequenciamento NGS disponíveis online, expandindo o conhecimento da composição e evolução genômica do grupo.
+
+# 2. Objetivos
+Caracterizar a composição do repetoma de diferentes espécies de orquídeas do gênero *Epidendrum* *in silico* através do software RepeatExplorer2, com base em dados de sequenciamento NGS disponíveis online. 
+
+# 3. Metodologia
+## 3.1. Obtenção de dados
+Dados de sequenciamento de baixa cobertura de 25 espécies de orquídeas do gênero *Epidendrum* L. foram obtidos do banco de dados NCBI <link> (https://www.ncbi.nlm.nih.gov/) e utilizados como *input* nas análises de caracterização do repetoma pelo RepeatExplorer2. Na Tabela 1 a seguir, são disponibilizados os códigos de acesso aos sequenciamentos de cada espécie no NCBI.
+```{r table1,  results="asis", warning=FALSE, message=FALSE, echo=FALSE}
+dnasat_ep <- read_excel("DNAsat_Epidendrum.xlsx")
+
+tabela1 <- dnasat_ep %>%
+  arrange(species) %>%
+  select(seq_cod, species) %>%
+  head(25) |> 
+  
+  kable(
+  padding = 2,
+  digits = 2,
+  caption = "**Tabela 1 - Códigos de acesso aos dados de sequenciamento de *Epidendrum* L. no NCBI **",
+  align = "cc",
+  col.names = c("Código NCBI", "Espécie")) %>%
+  column_spec(2, italic = TRUE) %>%
+  kable_styling(full_width = TRUE)
+
+tabela1
+
+
+```
+
+## 3.2. Análise de repetoma *in silico* via RepeatExplorer2
+A caracterização do repetoma de cada espécie foi feita com base na anotação de elementos repetitivos (DNAsat e TEs) automática do software RepeatExplorer2 (RE2 - <link> https://repeatexplorer-elixir.cerit-sc.cz/), segundo orientações padrão da plataforma. O fluxo de análise incluiu avaliações independentes da qualidade dos dados de sequenciamento de cada espécie, seguido da execução do pipeline do próprio RE2 para anotação dos elementos repetitivos e visualização dos resultados com a ferramenta Krona. O passo a passo desse fluxo de análise encontra-se disponível através do link: <link> https://repeatexplorer-elixir.cerit-sc.cz/galaxy/u/anahumberto/w/anlise-de-repetoma. Uma vez gerados os resultados da anotação automática, as sequências de DNAsat putativas identificadas pelo RE2 foram filtradas manualmente conforme os seguintes critérios: (1) apresentar topologia de gráfico circular, indicando a ocorrência de clusters com repetições em tandem (NOVÁK et al., 2017); (2) sequência consenso do DNAsat com  >100 nts; (3) dotplot com sobreposição de linhas densas, indicando um alto padrão de elementos repetitivos na sequência consenso. Clusters não anotados pelo RE2 mas que apresentaram correspondência com estes mesmos critérios foram analisados e anotados manualmente através da plataforma Geneious v. 7.1.3, sendo incluídos na tabela final de anotação de clusters gerada pelo RE2 para cada espécie. A partir dos dados dessas tabelas, calculou-se o total de DNAsat e TEs identificados por espécie, sendo os resultados dessa análise incluídos nas planilhas dos arquivos `DNAsat_Epidendrum.xlsx` e `TE_Epidendrum.xlsx`, respectivamente, disponíveis no repositório online do GitHub: <link> https://github.com/anacarol-bio/Projeto-final---MVDR. Por fim, gráficos de barras referentes aos resultados dessas planilhas foram gerados no RStudio para visualizar os dados usando o pacote `ggplot2`, além de outros incluídos nos códigos do arquivo `Projeto_repetoma.Rmd`, também disponível no repositório do GitHub.
+
+# 4. Resultados e Discussão
+
+Através da anotação automática de elementos repetitivos realizada pelo RE2, foram identificados **`r sum(dnasat_ep$TAREAN)`** DNAsat putativos nos dados de sequenciamento das 25 espécies de *Epidendrum* (Tabela 1) aqui analisadas. Destes, **`r sum(dnasat_ep$TAREAN_filtered)`** foram filtrados manualmente e mantiveram-se nas tabelas de anotação geradas pelo RE2 (dados não mostrados) enquanto os outros foram excluídos da anotação por não se adequarem aos critérios de qualidade (ver item 3.2. da metodologia). Ademais, foram anotados **`r sum(dnasat_ep$GENEIOUS)`** DNAsat manualmente através do software Geneious, totalizando **`r sum(dnasat_ep$DNAsat_total)`** DNAsat identificados *in silico* nos genomas das espécies analisadas neste conjunto de dados. O gráfico a seguir, gerado no RStudio a partir do arquivo `DNAsat_Epidendrum.xlsx` mostra a quantidade de DNAsat total (filtrados e anotados manualmente) identificada por espécie:
+
+
+```{r plot1,fig.height=5,fig.width=8,fig.align='center', echo=FALSE, warning=FALSE, message=FALSE}
+
+# Gráfico de distribuição total de DNAsat por espécie com filtragem manual (RE2) + anotação manual (GENEIOUS)
+plot1 <- ggplot(dnasat_ep, aes(x = DNAsat_total, y = species, fill = species)) +
+  geom_bar(stat = "identity", show.legend = F) +
+  theme_minimal() +
+  labs(title = "Distribuição de DNAsat por espécie",
+       x = "DNAsat (total)",
+       y = "Espécie") +
+  scale_x_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), limits = c(0, 12)) +
+  theme(axis.title.x = element_text(size = 10, face = "bold"),
+        axis.title.y = element_text(size = 10, face = "bold"),
+        axis.text.y = element_text(face = "italic", size = 10, color = "black"),
+        plot.title = element_text(size = 14, face = "bold", color = "black", hjust = 0.5),
+        panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(size = 0.2))
+
+plot1
+```
+
+Em relação aos resultados da anotação de DNAsat em *Epidendrum*, pode-se constatar que há uma grande diferença na quantidade de DNAsat identificados entre as espécies analisadas, variando desde 1 (em *E. parkinsonianum*) à 12 (em *E. repens*). Essa discrepância pode ser consequência do tipo de estratégia de sequenciamento adotada na geração de dados pelos pesquisadores, sendo que as espécies de código ERX (Tabela 1) foram sequenciadas pela técnica de WGS (sigla do termo em inglês, *Whole Genome Sequencing*) enquanto as de código SRX (Tabela 1) foram submetidas à técnica de sequenciamento por hibridização e captura. A depender da estratégia adotada, pode haver variação na representatividade das sequências identificadas no conjunto de dados analisados.
+
+Por outro lado, diferenças interespecíficas na abundância de DNAsat podem ocorrer não apenas devido a eficiência da metodologia empregada na análise mas às próprias características genômicas das espécies. Por exemplo, variações na quantidade de DNAsat observadas em três espécies de carvalho do gênero *Quercus* L. analisados por Mascagni et al. (2020) refletem as origens filogenéticas diversas das espécies. Também é provável que as diferenças nas frequências dos DNAsat geradas ao longo da evolução de *Quercus* tenham contribuído para o estabelecimento das variações estruturais cromossômicas entre as espécies. Ainda considerando que em diversos casos os DNAsat são comumente espécie-específicos, as diferenças de abundância observadas em *Epidendrum* podem ser devido às características biológicas das próprias plantas. Para validar se tais resultados dependem de fatores metodológicos e/ou biológicos, porém, faz-se necessário realizar mais análises comparativas da composição e localização desses elementos no genoma das espécies investigadas.
+
+
+```{r plot2,fig.height=5,fig.width=8,fig.align='center', echo=FALSE, warning=FALSE, message=FALSE}
+
+# Gráfico de distribuição total de elementos transponíveis (TE) por espécie com mapeamento baseado na classe do TE
+
+te_ep <- read_excel("TE_Epidendrum.xlsx")
+
+# Empilhar as colunas TE_class1 e TE_class2
+te_ep_edit <- te_ep %>%
+  pivot_longer(cols = c(Classe_1, Classe_2), names_to = "Classe_TE", values_to = "Quantidade")
+
+# Plotando
+plot2<- ggplot(te_ep_edit, aes(x = species, y = Quantidade, fill = factor(Classe_TE))) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Distribuição de TEs por espécie",
+       x = "Espécie",
+       y = "TEs (total)",
+       fill = "Classe TE") +
+  scale_y_continuous(breaks = c(0,20, 40, 60, 80, 100, 120, 140), limits = c(0, 126)) +
+  scale_fill_manual(name = "Classificação", values = c("Classe_1" = "deeppink", "Classe_2" = "darkcyan")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(hjust = 1),
+        axis.title.x = element_text(size = 10, face = "bold"),
+        axis.title.y = element_text(size = 10, face = "bold"),
+        axis.text.y = element_text(size = 10, face = "italic"),
+        plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+        panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(size = 0.2))
+```
+
+Quanto aos resultados da anotação de TEs, identificou-se atravavés do RE2 um total de **`r sum(te_ep$TE_total)`** TEs nos dados de sequenciamento aqui analisados. Destes,  **`r sum(te_ep$Classe_1)`** são de Classe 1 e **`r sum(te_ep$Classe_2)`** são de Classe 2. A relação desses dados e o total de TEs por espécie podem ser visualizados no gráfico a seguir, gerado a partir do arquivo `TE_Epidendrum.xlsx`:
+
+```{r plot, fig.height=5,fig.width=8,fig.align='center', echo=FALSE, warning=FALSE, message=FALSE}
+plot2
+```
+
+Assim como entre os DNAsat, há grande variação na quantidade de TEs identificados por espécie, com contagens desde 4 (em *E. difforme* e *E. rivulare*) à 126 (em *E. gasteriferum*). Neste caso, as diferentes estratégias de sequenciamento empregadas na geração de dados também podem ter relação com a variação de TEs detectados nos genomas de *Epidendrum*. De modo geral, a origem das diferenças interespecíficas na composição de TEs ainda é pouco compreendida entre os cientistas. Sabe-se que o perfil de TEs observado em uma determinada espécie de planta pode ser o resultado de múltiplas fontes reguladoras provenientes dos próprios TEs e das características da planta hospedeira (controle epigenético, tamanho do genoma, nível de poliploidia, mecanismos de eliminação de sequências e sistema reprodutivo) (MHIRI; BORGES; GRANDBASTIEN, 2022).
+
+Porém, algo notável que pode-se observar nos resultados de anotação de TEs de *Epidendrum* assim como de outros grupos de plantas é que os TEs de classe 1 são mais abundantes no repetoma do que os de classe 2. Embora os TEs de classe 1 sejam em grande parte intergênicos, a maioria dos TEs de classe 2 são encontrados preferencialmente dentro e ao redor dos genes. Assim, os TEs de classe 1 contribuem mais significativamente para as diferenças de TG das plantas, enquanto os elementos da classe 2 estão frequentemente envolvidos na geração de diversidade alélica (HAN; QIN; WESSLER, 2013). Análises comparativas relativas à abundância e constituição dessas sequências fazem-se necessárias para melhor caracterização da evolução do repetoma de *Epidendrum* em estudos futuros. 
+
+# 5. Conclusão
+
+Neste estudo, buscou-se caracterizar computacionalmente o repetoma de 25 espécies de orquídeas do gênero *Epidendrum*  com auxílio do software RepeatExplorer2. Os resultados das análises aqui realizadas indicaram uma variabilidade significativa na abundância de DNAsat e TEs identificados *in silico* entre as espécies analisadas. A anotação de DNAsat revelou diferenças na quantidade dessas sequências, potencialmente relacionadas às estratégias de sequenciamento adotadas e às características genômicas intrínsecas das espécies. Além disso, a anotação de TEs mostrou que os TEs de classe 1 predominam sobre os de classe 2 no repetoma de *Epidendrum*, sugerindo que esses elementos podem desempenhar papéis distintos na evolução do genoma das plantas. Portanto, estudos comparativos futuros, envolvendo análises mais detalhadas das características estruturais genômicas e evolutivas das orquídeas são necessários para a compreensão do perfil e da dinâmica do repetoma de *Epidendrum*, além da inclusão de mais dados de sequenciamento de outras espécies do gênero no conjunto de dados.
+
+
+# Referências
+BOURQUE, G. et al. Ten things you should know about transposable elements. **Genome Biology**, 19:1-12, 2018.
+
+FOURREAU, Chloé Julie Loïs et al. Genome sizes and repeatome evolution in zoantharians (Cnidaria: Hexacorallia: Zoantharia). **PeerJ**, v. 11, p. e16188, 2023.
+
+GOODWIN, S. et al. Coming of age: ten years of next-generation sequencing technologies. **Nature Reviews Genetics**, 17:333-351, 2016.
+
+HAN, Yujun; QIN, Shanshan; WESSLER, Susan R. Comparison of class 2 transposable elements at superfamily resolution reveals conserved and distinct features in cereal grass genomes. **BMC genomics**, v. 14, n. 1, p. 1-10, 2013.
+
+HSU, Chia-Chi et al., Identification of high-copy number long terminal repeat retrotransposons and their expansion in Phalaenopsis orchids. **BMC Genomics**, 21:1-13, 2020.
+
+KARREMANS, A.P. With great biodiversity comes great responsibility: the underestimated diversity of *Epidendrum* (Orchidaceae). **Harvard Papers in Botany**, 26:299-369, 2021.
+
+LEITCH, I.J. et al. Genome size diversity in orchids: consequences and evolution. **Annals of Botany**, 104:469-481, 2009.
+
+MASCAGNI, Flavia et al. A computational comparative study of the repetitive DNA in the genus *Quercus* L. **Tree Genetics & Genomes*, v. 16, p. 1-11, 2020.
+
+MEHROTRA, S.; GOYAL, V. Repetitive sequences in plant nuclear DNA: types, distribution, evolution and function. **Genomics, Proteomics & Bioinformatics**, 12:164-171, 2014.
+
+MHIRI, Corinne; BORGES, Filipe; GRANDBASTIEN, Marie-Angèle. Specificities and dynamics of transposable elements in land plants. **Biology**, v. 11, n. 4, p. 488, 2022.
+
+NOVÁK, P. et al. Graph-based clustering and characterization of repetitive sequences in next-generation sequencing data. **BMC Bioinformatics**, 11:1-12, 2010.
+
+NOVÁK, P. et al. TAREAN: a computational tool for identification and characterization of satellite DNA from unassembled short reads. **Nucleic Acids Research**, 45:e111, 2017.
+
+NOVÁK, P. et al., Repeat-sequence turnover shifts fundamentally in species with large genomes. Nature Plants 6:1325-1329, 2020.
+PINHEIRO, F.; BARROS, F. *Epidendrum secundum* Jacq. e *E. denticulatum* Barb. Rodr. (Orchidaceae): caracteres úteis para a sua delimitação. **Hoehnea**, 34:563-570, 2007.
+
+PESSOA, Edlley M. et al. Too many species: morphometrics, molecular phylogenetics and genome structure of a Brazilian species complex in *Epidendrum* (Laeliinae; Orchidaceae) reveal fewer species than previously thought. **Botanical Journal of the Linnean Society**, v. 195, n. 2, p. 161-188, 2021.
+
+PINHEIRO, F.; COZZOLINO, S. *Epidendrum* (Orchidaceae) as a model system for ecological and evolutionary studies in the Neotropics. **Taxon**, 62:77-88, 2013.
+
+YOUNG, A.D.; GILLUNG, J.P. Phylogenomics — principles, opportunities and pitfalls of big-data phylogenetics. **Systematic Entomology**, 45:225–247. 
+
+WANG, Y. et al. Characterization of repetitive sequences in Dendrobium officinale and comparative chromosomal structures in *Dendrobium* species using FISH. **Gene**, 846:146869, 2022.
+
+WICKER, T. et al. A unified classification system for eukaryotic transposable elements. **Nature Reviews Genetics**, 8:973-982, 2007.
